@@ -7,7 +7,7 @@ Courier Quest is a data structures project for video games developed in Python u
 
 <div align="center">
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" width="40px" style="margin: 10px;" />
-  <img src="images\pygame_logo.png" width="80px" style="margin: 40px;" />
+  <img src="images\pygame_logo.png" width="85px" style="margin: 40px;" />
 </div>
 
 ## <img src="images\Tools_Gif.gif" width ="25"><b> Software Tools & IDE's:</b>
@@ -18,6 +18,6 @@ Courier Quest is a data structures project for video games developed in Python u
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="40px" style="margin: 10px;" />
 </div>
 
-## <img src="images\Pixel_Coding_M.gif" width ="40"><b> Developed by:</b> <img src="images\Pixel_Coding_W.gif" width ="40">
+## <img src="images\Pixel_Coding_M.gif" width ="45"><b> Developed by:</b> <img src="images\Pixel_Coding_W.gif" width ="45">
 * Priscilla Murillo Romero
 * Sebastián Chaves Salazar
