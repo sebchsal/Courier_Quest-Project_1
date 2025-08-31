@@ -7,7 +7,7 @@ Courier Quest is a data structures project for video games developed in Python u
 
 <div align="center">
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" width="40px" style="margin: 10px;" />
-  <img src="images\pygame_logo.png" width="40px" style="margin: 10px;" />
+  <img src="images\pygame_logo.png" width="60px" style="margin: 20px;" />
 </div>
 
 ## <img src="images\Tools_Gif.gif" width ="25"><b> Software Tools & IDE's:</b>
