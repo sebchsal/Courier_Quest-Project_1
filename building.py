@@ -75,31 +75,31 @@ class Building:
 
 
 def detectar_bloques(mapa, tile_size=40, img_path="images/building.png"):
-    visited = [[False] * mapa.width for _ in range(mapa.height)]
-    bloques = []
+    visited = [[False] * mapa.width for _ in range(mapa.height)] # matriz de visitados
+    bloques = [] # lista de bloques detectados
 
-    for y in range(mapa.height):
-        for x in range(mapa.width):
-            if mapa.tiles[y][x] == "B" and not visited[y][x]:
+    for y in range(mapa.height): # recorrer filas
+        for x in range(mapa.width): # recorrer columnas
+            if mapa.tiles[y][x] == "B" and not visited[y][x]: # Encontrar un nuevo bloque
+                # Expandir hacia la derecha y abajo para encontrar el tamaño del bloque
                 w = 1
-                while (x + w < mapa.width and 
-                       mapa.tiles[y][x + w] == "B" and 
-                       not visited[y][x + w]):
+                while (x + w < mapa.width and mapa.tiles[y][x + w] == "B" and 
+                       not visited[y][x + w]):# expandir ancho
                     w += 1
                 h = 1
                 expand = True
-                while expand and y + h < mapa.height:
-                    for i in range(w):
+                while expand and y + h < mapa.height: # expandir alto
+                    for i in range(w): # verificar fila completa
                         if (mapa.tiles[y + h][x + i] != "B" or 
-                            visited[y + h][x + i]):
+                            visited[y + h][x + i]): # no es "B" o ya visitado
                             expand = False
                             break
-                    if expand:
+                    if expand: # si toda la fila es "B", expandir
                         h += 1
                 # Marcar como visitados
-                for yy in range(y, y + h):
-                    for xx in range(x, x + w):
+                for yy in range(y, y + h): # marcar filas
+                    for xx in range(x, x + w): # marcar columnas
                         visited[yy][xx] = True
-                bloques.append(Building(x, y, w, h, tile_size, img_path))
+                bloques.append(Building(x, y, w, h, tile_size, img_path)) # agregar bloque
 
     return bloques

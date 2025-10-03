@@ -3,19 +3,21 @@ import os
 import requests
 from datetime import datetime
 from jobs import Packet
-
+# Helpers para obtener datos con caché y fallback local
 def get_data_with_cache(url, cache_path, local_fallback=None):
     os.makedirs(os.path.dirname(cache_path), exist_ok=True)
     try:
+        # Hacer solicitud HTTP con timeout
         res = requests.get(url, timeout=5)
         res.raise_for_status()
         data = res.json()
-
         # Guardar con timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         versioned_path = f"{cache_path}_{timestamp}"
+        # Guardar en cache y versiónada
         with open(cache_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
+        # Guardar versiónada
         with open(versioned_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
@@ -35,7 +37,6 @@ url = "https://tigerds-api.kindflower-ccaf48b6.eastus.azurecontainerapps.io/city
 cache_path = "api_cache/map.json"
 local_path = "data/city.json"
 raw_map = get_data_with_cache(url, cache_path, local_path)
-
 map_data = raw_map["data"] if "data" in raw_map else raw_map
 
 # --- Clase Mapa ---
@@ -48,16 +49,19 @@ class Mapa:
         self.cityname = data.get("city_name", "")
         self.goal = data.get("goal", 0)
         self.maxtime = data.get("max_time", 0)
-
+    # Verificar si es calle o parque (atravesable)
     def street_verification(self, x: int, y: int) -> bool:
         tile = self.tiles[y][x]
         return tile in ("C", "S")
-
+    # Verificar si hay un punto de entrega
     def weight_surface(self, x: int, y: int) -> float:
         tile = self.tiles[y][x]
         return self.legend[tile].get("surface_weight", 1.0)
-
+    # Marcar punto de entrega
     def package_insercion(self, paquete: Packet):
         x, y = paquete.pickup
         if not self.street_verification(x, y):
             self.tiles[y][x] = "D"
+    # Marcar punto de descanso
+    def is_rest_point(self, x: int, y: int) -> bool:
+        return self.tiles[y][x] == "R"
