@@ -150,7 +150,7 @@ class Game:
         
         # meta de ingresos 
         total_api_payout = sum(p["payout"] for p in jobs_data)
-        self.goal_income = int(total_api_payout)   #meta = 2x total base (puedes ajustar)
+        self.goal_income = int(total_api_payout * 2) # meta
         self.jugador.goal_income = self.goal_income
         print(f"Meta de ingresos establecida: {self.goal_income}")
         self.reproducir_musica("menu")
