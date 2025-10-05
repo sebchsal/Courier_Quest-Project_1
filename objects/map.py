@@ -2,7 +2,7 @@ import json
 import os
 import requests
 from datetime import datetime
-from jobs import Packet
+from objects.jobs import Packet
 
 # Helpers para obtener datos con caché y fallback local
 def get_data_with_cache(url, cache_path, local_fallback=None):
