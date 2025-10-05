@@ -1,10 +1,19 @@
-import json, random, time, os, pygame, requests
+import json
+import random
+import time
+import os
+import pygame
+import requests
 from datetime import datetime
+
+# Lista de pedidos base para reposición
+base_packets = []
 
 # Cargar las imágenes de pedidos (sin convert_alpha aún) 
 pickup_img = pygame.image.load("images/pckup.png")
 dropoff_img = pygame.image.load("images/drop.png")
-# Función para obtener datos con caché 
+
+# Helpers para obtener datos con caché y fallback local
 def get_data_with_cache(url, cache_path, local_fallback=None):
     os.makedirs(os.path.dirname(cache_path), exist_ok=True) # Asegurar que el directorio existe
     # Intentar obtener datos de la API
@@ -82,12 +91,14 @@ todos_los_pedidos = []
 
 # Inicializar pedidos 
 def inicializar_pedidos(jobs_data): # jobs_data es una lista de dicts
-    global todos_los_pedidos, pickups_disponibles, activos, completados # todos los pedidos
-    todos_los_pedidos = [Packet.from_dict(p) for p in jobs_data] # Convertir dicts a Packet
-    pickups_disponibles = todos_los_pedidos[:] # Todos los pedidos empiezan como disponibles
-    activos = [] # Ningún pedido activo al inicio
-    completados = [] # Ningún pedido completado al inicio
-    return pickups_disponibles # Retornar lista de pickups disponibles
+    global todos_los_pedidos, pickups_disponibles, activos, completados, base_packets
+
+    base_packets = [Packet.from_dict(p) for p in jobs_data]  # copia plantilla
+    todos_los_pedidos = [Packet.from_dict(p) for p in jobs_data]
+    pickups_disponibles = todos_los_pedidos[:]
+    activos = []
+    completados = []
+    return pickups_disponibles # Retornar lista inicial
 
 # Dibujar pedidos 
 def dibujar_pedidos(surface, offset_x, offset_y, TILE_SIZE, pickup_surf, dropoff_surf):
@@ -118,10 +129,7 @@ def aceptar_pedido(tile_x, tile_y, jugador):
             pickups_disponibles.remove(candidato)
             candidato.accepted_time = time.time()
             activos.append(candidato)
-            print(f"✅ Pedido {candidato.id} aceptado. Peso: {jugador.inventory.total_weight()}")
             return True
-        else:
-            print(f"❌ Pedido {candidato.id} rechazado (sobrepeso)")
     return False
 
 # Helpers para reposición 
@@ -170,6 +178,31 @@ def crear_nuevo_pickup(base_packet, mapa):
         release_time=base_packet.release_time 
     )
 
+# Reponer tanda de pedidos base de la API
+def reponer_tanda_base():
+    global pickups_disponibles, base_packets
+    if not base_packets:
+        return []
+    # Elimina cualquier pickup pendiente de la tanda anterior
+    pickups_disponibles.clear()
+    # Recrear los mismos 5 paquetes base con las mismas posiciones
+    nuevos = []
+    for bp in base_packets:
+        # Clonar sin alterar pickup/dropoff
+        nuevo = Packet(
+            id=bp.id,
+            pickup=bp.pickup,
+            dropoff=bp.dropoff,
+            payout=bp.payout,
+            deadline=bp.deadline,
+            weight=bp.weight,
+            priority=bp.priority,
+            release_time=bp.release_time
+        )
+        nuevos.append(nuevo)
+    pickups_disponibles.extend(nuevos)
+    return nuevos
+
 # Verificar entrega 
 def verificar_entrega(tile_x, tile_y, jugador, mapa):
     global activos, completados, pickups_disponibles
@@ -181,6 +214,7 @@ def verificar_entrega(tile_x, tile_y, jugador, mapa):
 
     if not entregado:
         return False
+
     # Verificar tiempo de entrega
     if entregado.accepted_time:
         elapsed = time.time() - entregado.accepted_time
@@ -205,7 +239,7 @@ def verificar_entrega(tile_x, tile_y, jugador, mapa):
                 jugador.first_late_penalty_used = True
             jugador.update_reputation(penalty, "Entrega tardía")
 
-        # Racha
+        # Racha de entregas
         if jugador.reputation >= 20:
             jugador.streak += 1
             if jugador.streak == 3:
@@ -216,18 +250,33 @@ def verificar_entrega(tile_x, tile_y, jugador, mapa):
 
         # Pago
         pago_final = jugador.apply_payout_bonus(entregado.payout)
-        print(f"💰 Pago base {entregado.payout}, pago final {pago_final}")
         jugador.total_payments += pago_final
-        # Mover pedido a completados y sacarlo de activos
+
+        # Mover pedido de activos a completados
         activos.remove(entregado)
         completados.append(entregado)
         jugador.inventory.remove_by_id(entregado.id)
+        verificar_mapa_vacio_y_reponer()
+        try:
+            if base_packets and len(completados) >= len(base_packets):
+                # Reponer los mismos 5 pedidos base de la API
+                reponer_tanda_base()
+                completados.clear()
+        except Exception as e:
+            print("Error al reponer tanda base:", e)
 
-        # Reponer nuevo pickup
-        nuevo = crear_nuevo_pickup(entregado, mapa)
-        pickups_disponibles.append(nuevo)
         return True
     return False
+
+# Verificar mapa vacío y reponer pedidos
+def  verificar_mapa_vacio_y_reponer():
+    global pickups_disponibles, activos, base_packets, completados
+
+    # Si ya no hay pickups ni dropoffs (ni activos ni disponibles)
+    if not pickups_disponibles and not activos:
+        print("Mapa vacío detectado → regenerando los 5 paquetes base...")
+        reponer_tanda_base()
+        completados.clear()
 
 # Cancelar pedido
 def cancelar_pedido(pedido, jugador):
@@ -236,12 +285,13 @@ def cancelar_pedido(pedido, jugador):
         activos.remove(pedido)   # ya no se dibuja dropoff
         jugador.update_reputation(-4, f"Cancelar pedido {pedido.id}")
         jugador.penalties += 4
-        print(f"❌ Pedido {pedido.id} cancelado")
+        verificar_mapa_vacio_y_reponer()
 
 # Expirar pedido
 def expirar_pedido(pedido, jugador):
     global activos, pickups_disponibles # todos_los_pedidos
     now = time.time() # Tiempo actual
+
     # Verifica si el pedido está activo y ha pasado 30 segundos desde que fue aceptado
     if pedido in activos:
         # Verifica si el pedido tiene tiempo de aceptación y ha pasado el límite
@@ -250,9 +300,10 @@ def expirar_pedido(pedido, jugador):
             jugador.inventory.remove_by_id(pedido.id)
             jugador.update_reputation(-6, "Pedido expirado")
             jugador.penalties += 6
-            print(f"⌛ Pedido {pedido.id} expirado")
+            print(f"Pedido {pedido.id} expirado...")
     elif pedido in pickups_disponibles: # Si el pedido nunca fue aceptado y ha pasado su release_time
         pickups_disponibles.remove(pedido)
         jugador.update_reputation(-6, "Pedido perdido antes de aceptar")
         jugador.penalties += 6
-        print(f"⌛ Pedido {pedido.id} perdido antes de ser aceptado")
+        print(f"Pedido {pedido.id} perdido antes de ser aceptado...")
+    verificar_mapa_vacio_y_reponer()

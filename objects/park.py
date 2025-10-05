@@ -1,5 +1,6 @@
 import pygame
 
+#Clase park, se impletamenta toda una imagen que cubre los parques
 class Park:
     def __init__(self, x, y, w, h, tile_size=40, img_path="images/park.png"):
         self.x = x
@@ -30,7 +31,7 @@ class Park:
         # Dibujar el sprite redimensionado encima
         surface.blit(self.sprite, (draw_x, draw_y))
 
-
+# deteccion de los tile parque (P)
 def detectar_parques(mapa, tile_size=40, img_path="images/park.png"):
     visitados = [[False]*mapa.width for _ in range(mapa.height)]
     parques = []

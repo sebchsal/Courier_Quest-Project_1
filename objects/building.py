@@ -1,5 +1,6 @@
 import pygame
 
+# Clase building, se impletamenta toda una imagen que cubre los edificios
 class Building:
     def __init__(self, x, y, w, h, tile_size=40, img_path="images/building.png"):
         self.x = x
@@ -24,8 +25,8 @@ class Building:
         else:
             self.sprite = pygame.transform.scale(cropped_img, (target_width, target_height))
 
+    # Recorta los márgenes transparentes de una imagen
     def _crop_transparent_margins(self, surface):
-        """Recorta los márgenes transparentes de una imagen"""
         # Obtener el rectángulo que contiene todos los píxeles no transparentes
         try:
             # Crear una máscara de los píxeles no transparentes
@@ -38,7 +39,7 @@ class Building:
                 # Si hay múltiples rectángulos, expandir para incluir todos
                 for rect in bounds[1:]:
                     crop_rect = crop_rect.union(rect)
-                # Recortar la imagen
+                # Recorta la imagen
                 cropped = pygame.Surface(crop_rect.size, pygame.SRCALPHA)
                 cropped.blit(surface, (0, 0), crop_rect)
                 return cropped
@@ -49,8 +50,8 @@ class Building:
             # Si hay algún error, devolver la imagen original
             return surface
 
+    # Crea una imagen de respaldo si no se puede cargar la original
     def _create_fallback_image(self):
-        """Crea una imagen de respaldo si no se puede cargar la original"""
         fallback = pygame.Surface((100, 100), pygame.SRCALPHA)
         pygame.draw.rect(fallback, (80, 80, 80, 255), (0, 0, 100, 100))
         pygame.draw.rect(fallback, (60, 60, 60, 255), (5, 5, 90, 90), 3)
@@ -73,7 +74,7 @@ class Building:
         # Dibujar el sprite redimensionado encima
         surface.blit(self.sprite, (draw_x, draw_y))
 
-
+# deteccion de los tile edificio (B)
 def detectar_bloques(mapa, tile_size=40, img_path="images/building.png"):
     visited = [[False] * mapa.width for _ in range(mapa.height)] # matriz de visitados
     bloques = [] # lista de bloques detectados

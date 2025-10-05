@@ -2,9 +2,8 @@ import os
 import glob
 
 MAX_VERSIONS = 1
-
+# Conserva solo las últimas max_versions versiones de un JSON
 def clean_old_versions(base_dir, base_filename, max_versions=MAX_VERSIONS):
-    """Conserva solo las últimas max_versions versiones de un JSON"""
     pattern = os.path.join(base_dir, f"{base_filename}_*")
     files = sorted(glob.glob(pattern), key=os.path.getmtime, reverse=True)
 
@@ -18,8 +17,8 @@ def clean_old_versions(base_dir, base_filename, max_versions=MAX_VERSIONS):
                 removed.append(f"{os.path.basename(old_file)} (error: {e})")
     return removed
 
+# Limpia versiones viejas en /data y /api_cache y devuelve resumen
 def clean_all():
-    """Limpia versiones viejas en /data y /api_cache y devuelve resumen"""
     summary = {}
     for base_dir, files in {
         "data": ["ciudad.json", "pedidos.json", "weather.json"],

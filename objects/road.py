@@ -1,5 +1,6 @@
 import pygame
 
+#Clase road, se impletamenta toda una imagen que cubre las calles
 class Road:
     def __init__(self, x, y, tile_size=40, img_path="images/road.jpg"):
         self.x = x
@@ -27,7 +28,7 @@ class Road:
 
         surface.blit(self.sprite, (draw_x, draw_y))
 
-
+# deteccion de los tile calle (C)
 def detectar_calles(mapa, tile_size=40, img_path="images/road.jpg"):
     calles = []
     for y in range(mapa.height):
