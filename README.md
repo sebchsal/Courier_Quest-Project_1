@@ -9,6 +9,11 @@ Courier Quest es un proyecto de estructuras de datos para videojuegos desarrolla
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" width="40px" style="margin: 10px;" />
   <img src="images\pygame_logo.png" width="85px" style="margin: 40px;" />
 </div>
+Instalar pygame con:
+
+```bash
+pip install pygame
+```
 
 ## <img src="images\Tools_Gif.gif" width ="25"><b> Herramientas de Software & IDE's:</b>
 
