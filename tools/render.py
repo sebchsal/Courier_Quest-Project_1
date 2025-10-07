@@ -64,7 +64,7 @@ class Renderer:
             rep_color = (200, 200, 0)
         else:
             rep_color = (200, 0, 0)
-        rep_text = f"Reputación: {jugador.reputation}"
+        rep_text = f"Reputation: {jugador.reputation}"
         render_rep = self.fuente.render(rep_text, True, rep_color)
         rep_rect = render_rep.get_rect(topleft=(10, text_rect.bottom + 5))
         pygame.draw.rect(self.ventana, (255, 255, 255), rep_rect.inflate(10, 6))
@@ -289,7 +289,7 @@ class Renderer:
         pedidos = jugador.inventory.view_by_priority() if modo == "priority" else jugador.inventory.view_by_deadline()
 
         # Texto ESC
-        txt_esc = self.fuente.render("ESC para salir", True, (180, 180, 180))
+        txt_esc = self.fuente.render("Press ESC to return", True, (180, 180, 180))
         self.ventana.blit(txt_esc, (menu_x + 10, menu_y + 10))
         x = menu_x + 50
         y = menu_y + 90
