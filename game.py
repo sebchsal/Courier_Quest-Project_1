@@ -397,7 +397,7 @@ class Game:
                             self.modo_inventario = "priority"
                         elif sortd_rect.collidepoint(mouse_x, mouse_y):
                             self.modo_inventario = "deadline"
-                        for pedido, del_rect in icon_rects:
+                        for pedido, rect, del_rect in icon_rects:
                             if del_rect.collidepoint(mouse_x, mouse_y):
                                 self.jugador.inventory.remove_by_id(pedido.id)
                                 cancelar_pedido(pedido, self.jugador)
